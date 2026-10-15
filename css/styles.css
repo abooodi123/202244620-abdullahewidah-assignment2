@@ -147,6 +147,11 @@ ol {
   outline-offset: 4px;
 }
 
+/* Elements focused by script (like the heading after "Back to top") need no ring for mouse users. */
+[tabindex="-1"]:focus:not(:focus-visible) {
+  outline: none;
+}
+
 [hidden] {
   display: none !important;
 }
@@ -2226,6 +2231,222 @@ h1 em {
   }
 }
 
+/* ---------- Motion and polish ---------- */
+
+/* Header gains a soft shadow once the page scrolls. */
+.site-header.is-scrolled {
+  box-shadow: 0 6px 24px rgba(25, 43, 39, 0.08);
+}
+
+:root[data-theme="dark"] .site-header.is-scrolled {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Hero entrance: copy rises in line by line, the visual fades in after. */
+.js .hero-copy > * {
+  animation: rise-in 0.8s var(--ease) both;
+}
+
+.js .hero-copy > :nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.js .hero-copy > :nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.js .hero-copy > :nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.js .hero-copy > :nth-child(5) {
+  animation-delay: 0.32s;
+}
+
+.js .hero-visual {
+  animation: fade-scale-in 1s var(--ease) 0.2s both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes fade-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+/* Slow, quiet motion in the decorative hero illustration. */
+.orbit-one {
+  animation: orbit-one 60s linear infinite;
+}
+
+.orbit-two {
+  animation: orbit-two 80s linear infinite reverse;
+}
+
+@keyframes orbit-one {
+  to {
+    transform: rotate(336deg) scaleX(1.13);
+  }
+}
+
+@keyframes orbit-two {
+  to {
+    transform: rotate(393deg) scaleX(1.4);
+  }
+}
+
+.floating-label {
+  animation: float 6s ease-in-out infinite alternate;
+}
+
+.label-two {
+  animation-delay: -2s;
+}
+
+.label-three {
+  animation-delay: -4s;
+}
+
+@keyframes float {
+  to {
+    transform: translateY(-8px);
+  }
+}
+
+/* Scroll reveal: JavaScript adds .reveal and then .is-visible when in view. */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hover feedback on interactive cards and buttons. */
+@media (hover: hover) {
+  .project-card {
+    transition: transform 0.35s var(--ease), box-shadow 0.35s ease, border-color 0.35s ease;
+  }
+
+  .project-card:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+  }
+
+  .project-card img {
+    transition: transform 0.6s var(--ease);
+  }
+
+  .project-card:hover img {
+    transform: scale(1.03);
+  }
+
+  .repo-card:not(.is-skeleton):hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+    transform: translateY(-3px);
+  }
+
+  .button-primary:hover {
+    box-shadow: 0 8px 20px rgba(14, 118, 89, 0.25);
+    transform: translateY(-1px);
+  }
+
+  .button:active {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+/* Floating back-to-top button (only with JavaScript, which controls it). */
+.back-to-top {
+  display: none;
+}
+
+.js .back-to-top {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(0.75rem);
+  transition: opacity 0.25s ease, transform 0.3s var(--ease), visibility 0s linear 0.3s, border-color 0.2s ease, color 0.2s ease;
+}
+
+.js .back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.25s ease, transform 0.3s var(--ease), visibility 0s, border-color 0.2s ease, color 0.2s ease;
+}
+
+.js .back-to-top:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 680px) {
+  .js .back-to-top {
+    right: 1rem;
+    bottom: 1rem;
+  }
+}
+
+/* A short cross-fade when switching themes (View Transitions API). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.35s;
+}
+
+/* ---------- Print ---------- */
+
+@media print {
+  .site-header,
+  .back-to-top,
+  .toast,
+  .project-toolbar,
+  .details-toggle,
+  .repo-toolbar,
+  .hero-visual,
+  .contact-form {
+    display: none !important;
+  }
+
+  .js .reveal,
+  .js .project-details {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+    grid-template-rows: 1fr !important;
+  }
+
+  .contact-section {
+    background: none;
+    color: #000000;
+  }
+}
+
 /* ---------- Motion preferences ---------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -2239,5 +2460,17 @@ h1 em {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Keep the decorative orbits still instead of jumping to their end angle. */
+  .orbit,
+  .floating-label {
+    animation: none !important;
   }
 }

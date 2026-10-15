@@ -102,6 +102,8 @@ function timeAgo(date) {
   return "just now";
 }
 
+const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 function onMediaChange(query, handler) {
   // Safari before 14 only supports the older addListener API.
   if (query.addEventListener) {
@@ -131,8 +133,14 @@ function initTheme() {
 
   toggle.addEventListener("click", () => {
     const next = root.dataset.theme === "dark" ? "light" : "dark";
-    applyTheme(next);
     storage.set(STORAGE_KEYS.theme, next);
+    // Cross-fade the whole page where the View Transitions API exists;
+    // other browsers simply switch instantly.
+    if (document.startViewTransition && !prefersReducedMotion()) {
+      document.startViewTransition(() => applyTheme(next));
+    } else {
+      applyTheme(next);
+    }
   });
 
   // Follow live system changes until the visitor picks a theme themselves.
@@ -764,6 +772,60 @@ function initGitHubRepos() {
   }
 }
 
+/* ---------- Scroll effects ---------- */
+
+function initScrollEffects() {
+  const header = $("#site-header");
+  const backToTop = $("#back-to-top");
+
+  // Throttle scroll work to one update per animation frame.
+  let ticking = false;
+  const update = () => {
+    const y = window.scrollY;
+    header.classList.toggle("is-scrolled", y > 8);
+    backToTop.classList.toggle("is-visible", y > window.innerHeight * 0.9);
+    ticking = false;
+  };
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    },
+    { passive: true }
+  );
+  update();
+
+  // Move focus to the top too, so keyboard users start again from the page heading.
+  backToTop.addEventListener("click", () => {
+    $("#hero-title").setAttribute("tabindex", "-1");
+    $("#hero-title").focus({ preventScroll: true });
+  });
+
+  // Fade sections in as they enter the screen.
+  if (!("IntersectionObserver" in window) || prefersReducedMotion()) return;
+
+  const targets = $$(".section:not(.hero) .section-heading, .about-content, .project-toolbar, .project-grid, .repo-grid, .contact-copy, .contact-form");
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        revealObserver.unobserve(entry.target);
+      });
+    },
+    { rootMargin: "0px 0px -8% 0px" }
+  );
+
+  targets.forEach((target) => {
+    // The second column of a two-column layout arrives slightly later.
+    if (target.matches(".about-content, .contact-form")) target.style.setProperty("--reveal-delay", "0.12s");
+    target.classList.add("reveal");
+    revealObserver.observe(target);
+  });
+}
+
 /* ---------- Footer ---------- */
 
 function initFooterYear() {
@@ -1034,7 +1096,7 @@ function initContactForm() {
 
 /* ---------- Start ---------- */
 
-[initTheme, initNavigation, initGreeting, initAboutTabs, initProjectExplorer, initGitHubRepos, initCopyEmail, initContactForm, initFooterYear].forEach((init) => {
+[initTheme, initNavigation, initGreeting, initAboutTabs, initProjectExplorer, initGitHubRepos, initCopyEmail, initContactForm, initScrollEffects, initFooterYear].forEach((init) => {
   try {
     init();
   } catch (error) {
