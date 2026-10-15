@@ -1,0 +1,11 @@
+{
+  "name": "portfolio-browser-tests",
+  "private": true,
+  "description": "Automated browser checks for the portfolio. Not needed to run the website.",
+  "scripts": {
+    "test": "node run-all.js"
+  },
+  "devDependencies": {
+    "puppeteer-core": "23.11.1"
+  }
+}

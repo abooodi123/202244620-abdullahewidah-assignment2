@@ -10,3 +10,6 @@ desktop.ini
 # Dependencies and local tooling
 node_modules/
 *.log
+
+# Browser test output
+tests/screenshots/
