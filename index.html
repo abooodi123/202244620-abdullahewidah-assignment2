@@ -331,21 +331,61 @@
           <div class="contact-copy">
             <p class="section-number">04 / Contact</p>
             <h2 id="contact-title">Let’s start a conversation.</h2>
-            <p>Have a project, question, or opportunity in mind? Send me a note.</p>
-            <a class="contact-email" href="mailto:ewidahabdullah@gmail.com">ewidahabdullah@gmail.com <span aria-hidden="true">↗</span></a>
-            <a class="social-link" href="https://www.linkedin.com/in/abdullah-ewidah-0a548b329/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn <span aria-hidden="true">↗</span></a>
+            <p>Have a project, question, or opportunity in mind? Send me a note and I’ll get back to you.</p>
+            <div class="email-row">
+              <a class="contact-email" href="mailto:ewidahabdullah@gmail.com">ewidahabdullah@gmail.com <span aria-hidden="true">↗</span></a>
+              <button class="copy-button" type="button" id="copy-email" data-copy="ewidahabdullah@gmail.com" aria-label="Copy email address" hidden>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" /></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <ul class="social-links">
+              <li><a class="social-link" href="https://www.linkedin.com/in/abdullah-ewidah-0a548b329/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn <span aria-hidden="true">↗</span></a></li>
+              <li><a class="social-link" href="https://github.com/abooodi123" target="_blank" rel="noopener noreferrer">Follow on GitHub <span aria-hidden="true">↗</span></a></li>
+            </ul>
           </div>
 
           <form class="contact-form" id="contact-form" action="mailto:ewidahabdullah@gmail.com" method="post" enctype="text/plain">
-            <label for="name">Name</label>
-            <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name" required maxlength="100" />
-            <label for="email">Email</label>
-            <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="254" />
-            <label for="message">Message</label>
-            <textarea id="message" name="message" rows="5" placeholder="Tell me what’s on your mind" required maxlength="3000"></textarea>
+            <div class="draft-notice" id="draft-notice" hidden>
+              <p>Welcome back! Your unsent message was restored.</p>
+              <button class="text-button" type="button" id="draft-discard">Discard draft</button>
+            </div>
+
+            <div class="field">
+              <label for="name">Name</label>
+              <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name" required minlength="2" maxlength="100" aria-describedby="name-error" />
+              <p class="field-error" id="name-error"></p>
+            </div>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required maxlength="254" aria-describedby="email-error" />
+              <p class="field-error" id="email-error"></p>
+            </div>
+
+            <div class="field">
+              <label for="topic">Topic <span class="optional">(optional)</span></label>
+              <select id="topic" name="topic">
+                <option value="">Choose a topic</option>
+                <option>Project collaboration</option>
+                <option>Internship or job opportunity</option>
+                <option>Question about my work</option>
+                <option>Something else</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" rows="5" placeholder="Tell me what’s on your mind" required minlength="10" maxlength="1500" aria-describedby="message-error message-count"></textarea>
+              <div class="field-meta">
+                <p class="field-error" id="message-error"></p>
+                <p class="char-count" id="message-count" hidden>0 / 1500</p>
+              </div>
+            </div>
+
             <button class="button button-primary" type="submit">Open email draft <span aria-hidden="true">↗</span></button>
-            <p class="form-help">Submitting opens your email app with a draft. No message is stored on this site.</p>
-            <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+            <p class="form-help">Submitting opens your email app with a ready-to-send draft; nothing is sent to a server.<span id="draft-help" hidden> While you type, your draft is saved in this browser only.</span></p>
+            <div class="form-status" id="form-status" role="status" aria-live="polite"></div>
           </form>
         </div>
       </section>
@@ -358,5 +398,7 @@
         <a href="#top">Back to top <span aria-hidden="true">↑</span></a>
       </div>
     </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>
