@@ -17,10 +17,14 @@ const check = (label, cond) => console.log(`${cond ? "PASS" : "FAIL"} ${label}`)
     await page.waitForSelector("#repo-grid .repo-card:not(.is-skeleton), .notice", { timeout: 15000 });
     // Reload (the API result is now cached) so tabbing starts from the very top.
     await page.goto(SITE, { waitUntil: "networkidle0" });
+    // :focus styles only apply in the focused window, so make this tab active.
+    await page.bringToFront();
 
     const stops = [];
     for (let i = 0; i < 120; i += 1) {
       await page.keyboard.press("Tab");
+      // Let focus styles settle (reduced motion still uses a 0.01 ms transition).
+      await new Promise((resolve) => setTimeout(resolve, 30));
       const info = await page.evaluate(() => {
         const el = document.activeElement;
         if (!el || el === document.body) return null;

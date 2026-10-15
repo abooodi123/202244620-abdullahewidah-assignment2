@@ -756,7 +756,15 @@ function initGitHubRepos() {
     if (state.repos && !state.loading) updatedText.textContent = `Updated ${timeAgo(state.savedAt)}`;
   }, 60 * 1000);
 
-  // Only call the API when the section is close to the screen.
+  // A fresh cached copy costs nothing, so show it straight away; this also keeps
+  // the cards in the keyboard Tab order for visitors who tab quickly down the page.
+  const cache = readCache();
+  if (cache && Date.now() - cache.savedAt < GITHUB.cacheMinutes * 60 * 1000) {
+    load();
+    return;
+  }
+
+  // Otherwise call the API only when the section is close to the screen.
   if ("IntersectionObserver" in window) {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -764,7 +772,7 @@ function initGitHubRepos() {
         observer.disconnect();
         load();
       },
-      { rootMargin: "400px 0px" }
+      { rootMargin: "800px 0px" }
     );
     observer.observe(section);
   } else {
