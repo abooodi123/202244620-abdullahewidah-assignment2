@@ -6,8 +6,12 @@
    bottom of this file, and one failing feature never stops the others.
    ========================================================================== */
 
+// Every value the site keeps in localStorage, in one place.
 const STORAGE_KEYS = {
   theme: "portfolio-theme",
+  githubCache: "portfolio-github-cache",
+  githubForks: "portfolio-github-forks",
+  contactDraft: "portfolio-contact-draft",
 };
 
 /* ---------- Small helpers ---------- */
@@ -56,7 +60,7 @@ function normalizeText(text) {
   return text
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -124,7 +128,6 @@ function initTheme() {
   // The inline script in <head> already chose the first theme before paint.
   function applyTheme(theme) {
     root.dataset.theme = theme;
-    toggle.setAttribute("aria-pressed", String(theme === "dark"));
     toggle.setAttribute("aria-label", `Switch to ${theme === "dark" ? "light" : "dark"} theme`);
     if (themeColor) themeColor.setAttribute("content", theme === "dark" ? "#101b19" : "#f5f6f3");
   }
@@ -160,7 +163,6 @@ function initNavigation() {
   function setMenuOpen(open) {
     nav.classList.toggle("is-open", open);
     toggle.setAttribute("aria-expanded", String(open));
-    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
   }
 
   const isMenuOpen = () => nav.classList.contains("is-open");
@@ -474,8 +476,6 @@ function initProjectExplorer() {
 
 const GITHUB = {
   user: "abooodi123",
-  cacheKey: "portfolio-github-cache",
-  forksKey: "portfolio-github-forks",
   cacheMinutes: 30, // GitHub allows 60 anonymous requests an hour, so reuse results.
   timeoutMs: 10000,
   pageSize: 6,
@@ -607,7 +607,7 @@ function initGitHubRepos() {
   const state = {
     repos: null,
     savedAt: 0,
-    includeForks: storage.get(GITHUB.forksKey) === "true",
+    includeForks: storage.get(STORAGE_KEYS.githubForks) === "true",
     expanded: false,
     loading: false,
     failed: false,
@@ -615,7 +615,7 @@ function initGitHubRepos() {
 
   function readCache() {
     try {
-      const cache = JSON.parse(storage.get(GITHUB.cacheKey));
+      const cache = JSON.parse(storage.get(STORAGE_KEYS.githubCache));
       if (cache && Array.isArray(cache.repos) && typeof cache.savedAt === "number") return cache;
     } catch {
       // A damaged cache is ignored and replaced on the next successful load.
@@ -708,7 +708,7 @@ function initGitHubRepos() {
     try {
       const repos = await fetchGitHubRepos();
       Object.assign(state, { repos, savedAt: Date.now(), failed: false });
-      storage.set(GITHUB.cacheKey, JSON.stringify({ savedAt: state.savedAt, repos }));
+      storage.set(STORAGE_KEYS.githubCache, JSON.stringify({ savedAt: state.savedAt, repos }));
       render();
     } catch (error) {
       state.failed = true;
@@ -733,7 +733,7 @@ function initGitHubRepos() {
   forksToggle.addEventListener("change", () => {
     state.includeForks = forksToggle.checked;
     state.expanded = false;
-    storage.set(GITHUB.forksKey, String(state.includeForks));
+    storage.set(STORAGE_KEYS.githubForks, String(state.includeForks));
     if (state.repos) render();
   });
 
@@ -900,7 +900,6 @@ function initCopyEmail() {
 
 const CONTACT = {
   email: "ewidahabdullah@gmail.com",
-  draftKey: "portfolio-contact-draft",
   minMessage: 10,
 };
 
@@ -998,7 +997,7 @@ function initContactForm() {
   // Draft autosave: unsent text survives a refresh or an accidental tab close.
   const readDraft = () => {
     try {
-      return JSON.parse(storage.get(CONTACT.draftKey)) || null;
+      return JSON.parse(storage.get(STORAGE_KEYS.contactDraft)) || null;
     } catch {
       return null;
     }
@@ -1007,9 +1006,9 @@ function initContactForm() {
   const saveDraft = debounce(() => {
     const draft = { name: fields.name.value, email: fields.email.value, topic: topic.value, message: fields.message.value };
     if (Object.values(draft).some((value) => value.trim())) {
-      storage.set(CONTACT.draftKey, JSON.stringify(draft));
+      storage.set(STORAGE_KEYS.contactDraft, JSON.stringify(draft));
     } else {
-      storage.remove(CONTACT.draftKey);
+      storage.remove(STORAGE_KEYS.contactDraft);
     }
   }, 400);
 
@@ -1017,7 +1016,7 @@ function initContactForm() {
     form.reset();
     clearErrors();
     updateCounter();
-    storage.remove(CONTACT.draftKey);
+    storage.remove(STORAGE_KEYS.contactDraft);
     draftNotice.hidden = true;
     status.textContent = "";
   }
