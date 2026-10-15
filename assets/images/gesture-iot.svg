@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-labelledby="title desc">
+  <title id="title">Gesture controlled IoT illustration</title><desc id="desc">A gesture signal travelling wirelessly to a connected device.</desc>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#dcece3"/><stop offset="1" stop-color="#b1d6c0"/></linearGradient></defs>
+  <rect width="800" height="480" fill="url(#bg)"/>
+  <g fill="none" stroke="#26775a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M142 308c-30-30-19-71 10-64l24 33V147c0-19 31-19 31 0v88-118c0-20 31-20 31 0v118-101c0-20 31-20 31 0v101-70c0-20 31-20 31 0v114c0 65-48 100-105 100-26 0-46-18-53-71Z" fill="#f7fbf7"/><path d="M354 238q39-43 78 0M375 264q19-21 38 0"/><circle cx="394" cy="285" r="5" fill="#26775a"/></g>
+  <rect x="500" y="138" width="184" height="197" rx="24" fill="#f7fbf7" stroke="#26775a" stroke-width="5"/><rect x="529" y="166" width="126" height="116" rx="12" fill="#d5eadb"/><circle cx="591" cy="224" r="31" fill="#68ab80"/><circle cx="591" cy="224" r="15" fill="#f7fbf7"/><path d="M560 306h63" stroke="#26775a" stroke-width="6" stroke-linecap="round"/>
+  <text x="400" y="422" fill="#245940" font-family="Arial,sans-serif" font-size="21" font-weight="700" text-anchor="middle" letter-spacing="4">GESTURE TO DEVICE</text>
+</svg>

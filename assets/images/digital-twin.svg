@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-labelledby="title desc">
+  <title id="title">Digital twin illustration</title><desc id="desc">Sensor waves feeding a digital mechanical model.</desc>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#d9e9e2"/><stop offset="1" stop-color="#a9cebb"/></linearGradient><pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2" fill="#6da588" opacity=".5"/></pattern></defs>
+  <rect width="800" height="480" fill="url(#bg)"/><rect width="800" height="480" fill="url(#dots)"/>
+  <g fill="none" stroke="#26775a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M58 240h75l24-75 36 151 31-103 21 27h75"/><path d="M323 240h68" stroke-dasharray="10 12"/><path d="M614 240h82l22-39 24 78 21-39h25"/></g>
+  <rect x="389" y="121" width="226" height="236" rx="22" fill="#f7fbf7" stroke="#26775a" stroke-width="5"/>
+  <circle cx="502" cy="239" r="75" fill="#d5e9da" stroke="#26775a" stroke-width="5"/><circle cx="502" cy="239" r="36" fill="#83b99a" stroke="#26775a" stroke-width="5"/>
+  <g fill="#26775a"><rect x="491" y="144" width="22" height="26" rx="4"/><rect x="491" y="308" width="22" height="26" rx="4"/><rect x="407" y="228" width="26" height="22" rx="4"/><rect x="571" y="228" width="26" height="22" rx="4"/></g>
+  <text x="400" y="422" fill="#245940" font-family="Arial,sans-serif" font-size="21" font-weight="700" text-anchor="middle" letter-spacing="4">SENSE · MODEL · PREDICT</text>
+</svg>
