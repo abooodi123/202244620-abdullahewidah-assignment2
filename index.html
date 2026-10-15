@@ -42,6 +42,7 @@
           <ul class="nav-links">
             <li><a href="#about">About</a></li>
             <li><a href="#projects">Projects</a></li>
+            <li><a href="#github">GitHub</a></li>
             <li><a href="#contact">Contact</a></li>
           </ul>
         </nav>
@@ -279,10 +280,56 @@
         </div>
       </section>
 
+      <section class="section github-section" id="github" aria-labelledby="github-title">
+        <div class="container">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="section-number">03 / On GitHub</p>
+              <h2 id="github-title">Live from my GitHub.</h2>
+            </div>
+            <p>Public repositories loaded straight from the GitHub API, so this list stays current on its own.</p>
+          </div>
+
+          <div class="repo-toolbar" id="repo-toolbar" hidden>
+            <label class="switch">
+              <input type="checkbox" id="repo-forks" />
+              <span class="switch-track" aria-hidden="true"></span>
+              <span>Include forks</span>
+            </label>
+
+            <div class="select-field">
+              <label for="repo-sort">Sort</label>
+              <select id="repo-sort">
+                <option value="updated">Recently updated</option>
+                <option value="name">Name (A–Z)</option>
+              </select>
+            </div>
+
+            <p class="repo-updated" id="repo-updated"></p>
+
+            <button class="text-button" type="button" id="repo-refresh">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.8-4.2L4 8.5M4 4v4.5h4.5M4 13a8 8 0 0 0 14.8 4.2l1.2-1.7M20 20v-4.5h-4.5" /></svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <div class="repo-status" id="repo-status" role="status" aria-live="polite"></div>
+          <p class="visually-hidden" id="repo-announcer" aria-live="polite"></p>
+          <ul class="repo-grid" id="repo-grid" aria-label="GitHub repositories"></ul>
+          <button class="button button-secondary repo-more" type="button" id="repo-more" aria-controls="repo-grid" hidden></button>
+
+          <noscript>
+            <p class="repo-fallback">Turn on JavaScript to load my repositories here, or browse them at <a href="https://github.com/abooodi123">github.com/abooodi123</a>.</p>
+          </noscript>
+
+          <a class="text-link repo-profile" href="https://github.com/abooodi123" target="_blank" rel="noopener noreferrer">View my full GitHub profile <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+
       <section class="section contact-section" id="contact" aria-labelledby="contact-title">
         <div class="container contact-grid">
           <div class="contact-copy">
-            <p class="section-number">03 / Contact</p>
+            <p class="section-number">04 / Contact</p>
             <h2 id="contact-title">Let’s start a conversation.</h2>
             <p>Have a project, question, or opportunity in mind? Send me a note.</p>
             <a class="contact-email" href="mailto:ewidahabdullah@gmail.com">ewidahabdullah@gmail.com <span aria-hidden="true">↗</span></a>
