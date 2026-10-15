@@ -63,13 +63,17 @@
       <section class="hero section" id="top" aria-labelledby="hero-title">
         <div class="container hero-grid">
           <div class="hero-copy">
-            <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Computer engineering · KFUPM</p>
+            <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> <span id="greeting" hidden></span> Computer engineering · KFUPM</p>
             <h1 id="hero-title">Engineering ideas into <em>working systems.</em></h1>
             <p class="hero-intro">I’m Abdullah Mohammed Ewidah. I build at the intersection of embedded systems, artificial intelligence, and cloud computing.</p>
             <div class="hero-actions">
               <a class="button button-primary" href="#projects">Explore my work <span aria-hidden="true">↗</span></a>
               <a class="text-link" href="#contact">Get in touch <span aria-hidden="true">→</span></a>
             </div>
+            <p class="local-time" id="local-time" hidden>
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+              <span>It’s <time id="dhahran-time"></time> for me in Dhahran, Saudi Arabia.</span>
+            </p>
           </div>
 
           <div class="hero-visual" aria-hidden="true">
@@ -90,14 +94,64 @@
             <h2 id="about-title">Curious across the whole stack.</h2>
           </div>
 
-          <div class="about-content">
-            <p class="lead">I’m a computer engineering student at King Fahd University of Petroleum and Minerals in Dhahran, Saudi Arabia. My work spans firmware and connected devices, machine learning, and cloud infrastructure. I enjoy turning an idea into a system I can build, test, and improve.</p>
-            <ul class="pill-list" aria-label="Areas of focus">
-              <li>Embedded systems</li>
-              <li>Computer vision</li>
-              <li>IoT</li>
-              <li>Cloud computing</li>
-            </ul>
+          <div class="about-content tabs" id="about-tabs">
+            <!-- JavaScript reveals the tab buttons; without it, all three panels show in order. -->
+            <div class="tab-list" role="tablist" aria-label="About me" hidden>
+              <button class="tab" type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true">Overview</button>
+              <button class="tab" type="button" role="tab" id="tab-skills" aria-controls="panel-skills" aria-selected="false" tabindex="-1">Skills</button>
+              <button class="tab" type="button" role="tab" id="tab-education" aria-controls="panel-education" aria-selected="false" tabindex="-1">Education</button>
+              <span class="tab-indicator" aria-hidden="true"></span>
+            </div>
+
+            <div class="tab-panel" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" tabindex="0">
+              <h3 class="panel-title">Overview</h3>
+              <p class="lead">I’m a computer engineering student at King Fahd University of Petroleum and Minerals in Dhahran, Saudi Arabia. My work spans firmware and connected devices, machine learning, and cloud infrastructure. I enjoy turning an idea into a system I can build, test, and improve.</p>
+              <ul class="pill-list" aria-label="Areas of focus">
+                <li>Embedded systems</li>
+                <li>Computer vision</li>
+                <li>IoT</li>
+                <li>Cloud computing</li>
+              </ul>
+            </div>
+
+            <div class="tab-panel" id="panel-skills" role="tabpanel" aria-labelledby="tab-skills" tabindex="0">
+              <h3 class="panel-title">Skills</h3>
+              <dl class="skill-groups">
+                <div>
+                  <dt>Languages</dt>
+                  <dd>Python, C, JavaScript, HTML &amp; CSS</dd>
+                </div>
+                <div>
+                  <dt>Embedded &amp; IoT</dt>
+                  <dd>ESP32 microcontrollers, IMU sensors, MQTT, FPGA-aware design</dd>
+                </div>
+                <div>
+                  <dt>AI &amp; data</dt>
+                  <dd>Computer vision with YOLO, model quantization, TinyML, signal feature extraction</dd>
+                </div>
+                <div>
+                  <dt>Tools</dt>
+                  <dd>Git &amp; GitHub, VS Code, AI coding assistants</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="tab-panel" id="panel-education" role="tabpanel" aria-labelledby="tab-education" tabindex="0">
+              <h3 class="panel-title">Education</h3>
+              <ol class="timeline">
+                <li>
+                  <p class="timeline-date">Expected December 2026</p>
+                  <h4>B.S. in Computer Engineering</h4>
+                  <p>King Fahd University of Petroleum and Minerals (KFUPM), Dhahran, Saudi Arabia</p>
+                </li>
+                <li>
+                  <p class="timeline-date">Senior design · In progress</p>
+                  <h4>Mechanical Health Digital Twin</h4>
+                  <p>Real-time fault detection and predictive health monitoring for mechanical systems.</p>
+                </li>
+              </ol>
+            </div>
+
             <p class="about-note">Expected graduation: December 2026 · Based in the Eastern Province, Saudi Arabia</p>
           </div>
         </div>

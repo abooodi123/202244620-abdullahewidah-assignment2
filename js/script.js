@@ -198,6 +198,88 @@ function initNavigation() {
   $$("main > section[id]").forEach((section) => sectionObserver.observe(section));
 }
 
+/* ---------- Greeting and local time ---------- */
+
+function getGreeting(hour) {
+  if (hour >= 5 && hour < 12) return "Good morning";
+  if (hour >= 12 && hour < 17) return "Good afternoon";
+  if (hour >= 17 && hour < 22) return "Good evening";
+  return "Hello, night owl";
+}
+
+function initGreeting() {
+  const greeting = $("#greeting");
+  const localTime = $("#local-time");
+  const clock = $("#dhahran-time");
+
+  // The greeting follows the visitor's clock; the time line shows mine.
+  greeting.textContent = getGreeting(new Date().getHours());
+  greeting.hidden = false;
+
+  const dhahranTime = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Riyadh", hour: "numeric", minute: "2-digit" });
+  const updateClock = () => {
+    const now = new Date();
+    clock.textContent = dhahranTime.format(now);
+    clock.dateTime = now.toISOString();
+  };
+
+  updateClock();
+  localTime.hidden = false;
+
+  // Line the updates up with the start of each minute so the clock is never late.
+  setTimeout(() => {
+    updateClock();
+    setInterval(updateClock, 60 * 1000);
+  }, (60 - new Date().getSeconds()) * 1000);
+}
+
+/* ---------- About tabs ---------- */
+
+function initAboutTabs() {
+  const tabList = $("#about-tabs [role='tablist']");
+  const tabs = $$("[role='tab']", tabList);
+  const panels = tabs.map((tab) => document.getElementById(tab.getAttribute("aria-controls")));
+  const indicator = $(".tab-indicator", tabList);
+
+  const selectedTab = () => tabs.find((tab) => tab.getAttribute("aria-selected") === "true") || tabs[0];
+
+  function moveIndicator(tab) {
+    indicator.style.width = `${tab.offsetWidth}px`;
+    indicator.style.transform = `translateX(${tab.offsetLeft}px)`;
+  }
+
+  function selectTab(tab, { focus = true, animate = true } = {}) {
+    tabs.forEach((candidate, index) => {
+      const isSelected = candidate === tab;
+      candidate.setAttribute("aria-selected", String(isSelected));
+      // Roving tabindex: only the active tab is in the Tab order; arrows move between tabs.
+      candidate.tabIndex = isSelected ? 0 : -1;
+      panels[index].hidden = !isSelected;
+      if (isSelected && animate) replayAnimation(panels[index], "is-entering");
+    });
+    moveIndicator(tab);
+    if (focus) tab.focus();
+  }
+
+  tabs.forEach((tab) => tab.addEventListener("click", () => selectTab(tab)));
+
+  // Keyboard support from the WAI-ARIA tabs pattern.
+  tabList.addEventListener("keydown", (event) => {
+    const index = tabs.indexOf(document.activeElement);
+    const targets = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: tabs.length - 1 };
+    if (index === -1 || !(event.key in targets)) return;
+    event.preventDefault();
+    selectTab(tabs[(targets[event.key] + tabs.length) % tabs.length]);
+  });
+
+  tabList.hidden = false;
+  selectTab(tabs[0], { focus: false, animate: false });
+
+  // Enable the sliding transition only after the first position is set.
+  requestAnimationFrame(() => indicator.classList.add("is-ready"));
+  window.addEventListener("resize", debounce(() => moveIndicator(selectedTab()), 100));
+}
+
 /* ---------- Project explorer ---------- */
 
 const PROJECT_FILTERS = {
@@ -952,7 +1034,7 @@ function initContactForm() {
 
 /* ---------- Start ---------- */
 
-[initTheme, initNavigation, initProjectExplorer, initGitHubRepos, initCopyEmail, initContactForm, initFooterYear].forEach((init) => {
+[initTheme, initNavigation, initGreeting, initAboutTabs, initProjectExplorer, initGitHubRepos, initCopyEmail, initContactForm, initFooterYear].forEach((init) => {
   try {
     init();
   } catch (error) {
