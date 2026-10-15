@@ -72,6 +72,36 @@ function isTypingTarget(element) {
   return Boolean(element && (element.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(element.tagName)));
 }
 
+// Builds DOM nodes with textContent, which keeps outside data (like API
+// responses) from ever being parsed as HTML.
+function createElement(tag, { className, text, attrs } = {}, children = []) {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text !== undefined) element.textContent = text;
+  if (attrs) Object.entries(attrs).forEach(([name, value]) => element.setAttribute(name, value));
+  element.append(...children);
+  return element;
+}
+
+const relativeTimeFormat = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+const TIME_UNITS = [
+  ["year", 31536000],
+  ["month", 2592000],
+  ["week", 604800],
+  ["day", 86400],
+  ["hour", 3600],
+  ["minute", 60],
+];
+
+// Turns a date into friendly text such as "3 days ago" or "just now".
+function timeAgo(date) {
+  const seconds = Math.round((new Date(date).getTime() - Date.now()) / 1000);
+  for (const [unit, size] of TIME_UNITS) {
+    if (Math.abs(seconds) >= size) return relativeTimeFormat.format(Math.round(seconds / size), unit);
+  }
+  return "just now";
+}
+
 function onMediaChange(query, handler) {
   // Safari before 14 only supports the older addListener API.
   if (query.addEventListener) {
@@ -350,6 +380,308 @@ function initProjectExplorer() {
   render();
 }
 
+/* ---------- GitHub repositories (public API) ---------- */
+
+const GITHUB = {
+  user: "abooodi123",
+  cacheKey: "portfolio-github-cache",
+  forksKey: "portfolio-github-forks",
+  cacheMinutes: 30, // GitHub allows 60 anonymous requests an hour, so reuse results.
+  timeoutMs: 10000,
+  pageSize: 6,
+};
+
+// Colors match the ones GitHub uses for each language.
+const LANGUAGE_COLORS = {
+  C: "#555555",
+  "C++": "#f34b7d",
+  "C#": "#178600",
+  CSS: "#563d7c",
+  Go: "#00add8",
+  HTML: "#e34c26",
+  Java: "#b07219",
+  JavaScript: "#f1e05a",
+  "Jupyter Notebook": "#da5b0b",
+  Kotlin: "#a97bff",
+  Python: "#3572a5",
+  Rust: "#dea584",
+  Shell: "#89e051",
+  TypeScript: "#3178c6",
+  Verilog: "#b2b7f8",
+  VHDL: "#adb2cb",
+};
+
+const REPO_ICON =
+  '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v16H7.5A2.5 2.5 0 0 0 5 20.5v-16ZM5 20.5A2.5 2.5 0 0 0 7.5 23H19v-5" /></svg>';
+
+function gitHubError(kind, details = {}) {
+  return Object.assign(new Error(kind), { kind }, details);
+}
+
+async function fetchGitHubRepos() {
+  if (!navigator.onLine) throw gitHubError("offline");
+
+  // Abort slow requests so the visitor is never left waiting forever.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GITHUB.timeoutMs);
+  let response;
+  try {
+    response = await fetch(`https://api.github.com/users/${GITHUB.user}/repos?per_page=100&sort=pushed`, {
+      headers: { Accept: "application/vnd.github+json" },
+      signal: controller.signal,
+    });
+  } catch (error) {
+    throw gitHubError(error.name === "AbortError" ? "timeout" : "network");
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (!response.ok) {
+    const limitReached = (response.status === 403 || response.status === 429) && response.headers.get("x-ratelimit-remaining") === "0";
+    const kind = limitReached ? "rate-limit" : response.status === 404 ? "not-found" : "http";
+    throw gitHubError(kind, { status: response.status, resetAt: Number(response.headers.get("x-ratelimit-reset")) * 1000 });
+  }
+
+  const data = await response.json();
+  if (!Array.isArray(data)) throw gitHubError("http");
+
+  // Keep only the fields the page shows: a smaller cache and simpler rendering.
+  return data.map((repo) => ({
+    name: String(repo.name),
+    description: repo.description ? String(repo.description) : "",
+    url: String(repo.html_url),
+    language: repo.language ? String(repo.language) : "",
+    stars: Number(repo.stargazers_count) || 0,
+    fork: Boolean(repo.fork),
+    archived: Boolean(repo.archived),
+    pushedAt: String(repo.pushed_at),
+  }));
+}
+
+function describeGitHubError(error) {
+  switch (error.kind) {
+    case "offline":
+      return "You seem to be offline. Reconnect to the internet and the list will load automatically.";
+    case "timeout":
+      return "GitHub took too long to respond. Please try again in a moment.";
+    case "rate-limit": {
+      const time = error.resetAt ? new Date(error.resetAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
+      return `GitHub limits how often one network can request data, and that limit has been reached. Try again ${time ? `after ${time}` : "later"}, or open my profile on GitHub.`;
+    }
+    case "not-found":
+      return "That GitHub profile could not be found. Please use the profile link below instead.";
+    case "http":
+      return `GitHub returned an unexpected response${error.status ? ` (error ${error.status})` : ""}. Please try again in a moment.`;
+    default:
+      return "The request to GitHub failed. Check your connection, then try again.";
+  }
+}
+
+function createRepoCard(repo) {
+  const safeUrl = repo.url.startsWith("https://github.com/") ? repo.url : `https://github.com/${GITHUB.user}`;
+  const link = createElement("a", { text: repo.name, attrs: { href: safeUrl, target: "_blank", rel: "noopener noreferrer" } });
+  const head = createElement("div", { className: "repo-head" }, [createElement("h3", {}, [link])]);
+  head.insertAdjacentHTML("afterbegin", REPO_ICON);
+  if (repo.fork) head.append(createElement("span", { className: "repo-badge", text: "Fork" }));
+  if (repo.archived) head.append(createElement("span", { className: "repo-badge", text: "Archived" }));
+
+  const description = createElement("p", {
+    className: repo.description ? "repo-desc" : "repo-desc is-placeholder",
+    text: repo.description || "No description provided yet.",
+  });
+
+  const footer = createElement("div", { className: "repo-footer" });
+  if (repo.language) {
+    const dot = createElement("span", { className: "lang-dot", attrs: { "aria-hidden": "true" } });
+    if (LANGUAGE_COLORS[repo.language]) dot.style.setProperty("--lang-color", LANGUAGE_COLORS[repo.language]);
+    footer.append(createElement("span", { className: "repo-lang" }, [dot, repo.language]));
+  }
+  if (repo.stars > 0) footer.append(createElement("span", { text: `${repo.stars} ${repo.stars === 1 ? "star" : "stars"}` }));
+  footer.append(createElement("time", { text: `Updated ${timeAgo(repo.pushedAt)}`, attrs: { datetime: repo.pushedAt } }));
+
+  return createElement("li", { className: "repo-card" }, [head, description, footer]);
+}
+
+function initGitHubRepos() {
+  const section = $("#github");
+  const toolbar = $("#repo-toolbar");
+  const grid = $("#repo-grid");
+  const status = $("#repo-status");
+  const announcer = $("#repo-announcer");
+  const updatedText = $("#repo-updated");
+  const refreshButton = $("#repo-refresh");
+  const forksToggle = $("#repo-forks");
+  const sortSelect = $("#repo-sort");
+  const moreButton = $("#repo-more");
+
+  const state = {
+    repos: null,
+    savedAt: 0,
+    includeForks: storage.get(GITHUB.forksKey) === "true",
+    expanded: false,
+    loading: false,
+    failed: false,
+  };
+
+  function readCache() {
+    try {
+      const cache = JSON.parse(storage.get(GITHUB.cacheKey));
+      if (cache && Array.isArray(cache.repos) && typeof cache.savedAt === "number") return cache;
+    } catch {
+      // A damaged cache is ignored and replaced on the next successful load.
+    }
+    return null;
+  }
+
+  function showLoading() {
+    toolbar.hidden = true;
+    moreButton.hidden = true;
+    status.textContent = "";
+    status.append(createElement("p", { className: "loading-message" }, [createElement("span", { className: "spinner", attrs: { "aria-hidden": "true" } }), "Loading repositories from GitHub…"]));
+    grid.setAttribute("aria-busy", "true");
+    grid.textContent = "";
+    for (let i = 0; i < 3; i += 1) {
+      const lines = ["skeleton-line is-title", "skeleton-line", "skeleton-line", "skeleton-line is-short"].map((className) => createElement("span", { className }));
+      grid.append(createElement("li", { className: "repo-card is-skeleton", attrs: { "aria-hidden": "true" } }, lines));
+    }
+  }
+
+  function showNotice(type, message, actions = []) {
+    status.textContent = "";
+    status.append(createElement("div", { className: `notice notice-${type}` }, [createElement("p", { text: message }), createElement("div", { className: "notice-actions" }, actions)]));
+  }
+
+  const retryButton = () => {
+    const button = createElement("button", { className: "button button-primary", text: "Try again", attrs: { type: "button" } });
+    button.addEventListener("click", () => load({ force: true }));
+    return button;
+  };
+
+  const profileLink = () =>
+    createElement("a", { className: "text-link", text: "Open GitHub profile ↗", attrs: { href: `https://github.com/${GITHUB.user}`, target: "_blank", rel: "noopener noreferrer" } });
+
+  function render() {
+    const forkCount = state.repos.filter((repo) => repo.fork).length;
+    const sorter = sortSelect.value === "name" ? (a, b) => a.name.localeCompare(b.name) : (a, b) => new Date(b.pushedAt) - new Date(a.pushedAt);
+    const list = state.repos.filter((repo) => state.includeForks || !repo.fork).sort(sorter);
+
+    toolbar.hidden = false;
+    grid.setAttribute("aria-busy", "false");
+    grid.textContent = "";
+    status.textContent = "";
+    updatedText.textContent = `Updated ${timeAgo(state.savedAt)}`;
+
+    if (list.length === 0) {
+      moreButton.hidden = true;
+      if (forkCount > 0) {
+        const showForks = createElement("button", { className: "button button-secondary", text: "Include forks", attrs: { type: "button" } });
+        showForks.addEventListener("click", () => {
+          forksToggle.checked = true;
+          forksToggle.dispatchEvent(new Event("change"));
+        });
+        showNotice("info", `No original repositories to show yet. Turn on “Include forks” to see ${forkCount} forked ${forkCount === 1 ? "repository" : "repositories"}.`, [showForks]);
+      } else {
+        showNotice("info", "There are no public repositories yet. New work will appear here automatically.", [profileLink()]);
+      }
+      announcer.textContent = "No repositories to show.";
+      return;
+    }
+
+    const shown = state.expanded ? list : list.slice(0, GITHUB.pageSize);
+    grid.append(...shown.map(createRepoCard));
+    moreButton.hidden = list.length <= GITHUB.pageSize;
+    moreButton.textContent = state.expanded ? "Show fewer" : `Show all ${list.length} repositories`;
+    moreButton.setAttribute("aria-expanded", String(state.expanded));
+    announcer.textContent = `Showing ${shown.length} of ${list.length} repositories.`;
+  }
+
+  function setRefreshing(isLoading) {
+    refreshButton.disabled = isLoading;
+    refreshButton.classList.toggle("is-loading", isLoading);
+    $("span", refreshButton).textContent = isLoading ? "Refreshing…" : "Refresh";
+  }
+
+  async function load({ force = false } = {}) {
+    if (state.loading) return;
+    const cache = readCache();
+    const cacheIsFresh = cache && Date.now() - cache.savedAt < GITHUB.cacheMinutes * 60 * 1000;
+    if (!force && cacheIsFresh) {
+      Object.assign(state, { repos: cache.repos, savedAt: cache.savedAt, failed: false });
+      render();
+      return;
+    }
+
+    state.loading = true;
+    setRefreshing(true);
+    if (!state.repos) showLoading();
+
+    try {
+      const repos = await fetchGitHubRepos();
+      Object.assign(state, { repos, savedAt: Date.now(), failed: false });
+      storage.set(GITHUB.cacheKey, JSON.stringify({ savedAt: state.savedAt, repos }));
+      render();
+    } catch (error) {
+      state.failed = true;
+      const fallback = state.repos ? { repos: state.repos, savedAt: state.savedAt } : cache;
+      if (fallback) {
+        // Stale data is better than none: show it and explain why it is old.
+        Object.assign(state, fallback);
+        render();
+        showNotice("error", `${describeGitHubError(error)} Showing the copy saved ${timeAgo(fallback.savedAt)}.`, [retryButton()]);
+      } else {
+        grid.textContent = "";
+        grid.setAttribute("aria-busy", "false");
+        showNotice("error", describeGitHubError(error), [retryButton(), profileLink()]);
+      }
+    } finally {
+      state.loading = false;
+      setRefreshing(false);
+    }
+  }
+
+  forksToggle.checked = state.includeForks;
+  forksToggle.addEventListener("change", () => {
+    state.includeForks = forksToggle.checked;
+    state.expanded = false;
+    storage.set(GITHUB.forksKey, String(state.includeForks));
+    if (state.repos) render();
+  });
+
+  sortSelect.addEventListener("change", () => state.repos && render());
+  refreshButton.addEventListener("click", () => load({ force: true }));
+
+  moreButton.addEventListener("click", () => {
+    state.expanded = !state.expanded;
+    render();
+    // After expanding, move focus to the first new card so keyboard users continue there.
+    const firstNew = state.expanded && grid.children[GITHUB.pageSize];
+    if (firstNew) $("a", firstNew).focus();
+  });
+
+  // Retry automatically when the connection comes back.
+  window.addEventListener("online", () => state.failed && load({ force: true }));
+
+  // Keep the "Updated … ago" label honest while the page stays open.
+  setInterval(() => {
+    if (state.repos && !state.loading) updatedText.textContent = `Updated ${timeAgo(state.savedAt)}`;
+  }, 60 * 1000);
+
+  // Only call the API when the section is close to the screen.
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        load();
+      },
+      { rootMargin: "400px 0px" }
+    );
+    observer.observe(section);
+  } else {
+    load();
+  }
+}
+
 /* ---------- Footer ---------- */
 
 function initFooterYear() {
@@ -385,7 +717,7 @@ function initContactForm() {
 
 /* ---------- Start ---------- */
 
-[initTheme, initNavigation, initProjectExplorer, initFooterYear, initContactForm].forEach((init) => {
+[initTheme, initNavigation, initProjectExplorer, initGitHubRepos, initFooterYear, initContactForm].forEach((init) => {
   try {
     init();
   } catch (error) {
