@@ -1570,30 +1570,75 @@ h1 em {
 }
 
 .contact-copy > p:not(.section-number) {
-  max-width: 360px;
+  max-width: 380px;
   color: var(--contact-muted);
+}
+
+.contact-section :focus-visible {
+  outline-color: var(--contact-accent);
+}
+
+.email-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-top: 2.5rem;
 }
 
 .contact-email,
 .social-link {
-  display: block;
-  width: max-content;
+  display: inline-block;
   max-width: 100%;
   overflow-wrap: anywhere;
   transition: color 0.2s ease;
 }
 
 .contact-email {
-  margin-top: 2.5rem;
   padding-bottom: 0.35rem;
   border-bottom: 1px solid currentColor;
   font-weight: 750;
 }
 
+.copy-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--contact-line);
+  border-radius: 100px;
+  background: transparent;
+  color: var(--contact-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.copy-button .icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.copy-button:hover {
+  border-color: var(--contact-accent);
+  color: var(--contact-accent);
+}
+
+.copy-button.is-copied {
+  border-color: var(--contact-accent);
+  background: rgba(148, 221, 180, 0.12);
+  color: var(--contact-accent);
+}
+
+.social-links {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.4rem;
+}
+
 .social-link {
-  margin-top: 1rem;
   color: var(--contact-muted);
-  font-size: 0.88rem;
+  font-size: 0.9rem;
 }
 
 .contact-email:hover,
@@ -1601,32 +1646,48 @@ h1 em {
   color: var(--contact-accent);
 }
 
-.contact-section :focus-visible {
-  outline-color: var(--contact-accent);
-}
-
 .contact-form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1.1rem;
 }
 
-.contact-form label {
-  font-size: 0.84rem;
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field label {
+  font-size: 0.86rem;
   font-weight: 700;
+}
+
+.optional {
+  color: var(--contact-muted);
+  font-weight: 500;
 }
 
 .contact-form input,
 .contact-form select,
 .contact-form textarea {
   width: 100%;
-  margin-bottom: 0.8rem;
   padding: 0.82rem 0.9rem;
   border: 1px solid var(--contact-line);
   border-radius: 0.4rem;
   background: var(--contact-field);
   color: var(--contact-ink);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.contact-form select {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--contact-muted) 50%), linear-gradient(135deg, var(--contact-muted) 50%, transparent 50%);
+  background-position: calc(100% - 1.15rem) 50%, calc(100% - 0.8rem) 50%;
+  background-size: 0.35rem 0.35rem;
+  background-repeat: no-repeat;
+  cursor: pointer;
 }
 
 .contact-form input:hover,
@@ -1653,6 +1714,66 @@ h1 em {
   opacity: 0.75;
 }
 
+.field.has-error input,
+.field.has-error textarea {
+  border-color: var(--contact-error);
+}
+
+.field.has-error input:focus,
+.field.has-error textarea:focus {
+  box-shadow: 0 0 0 3px rgba(255, 180, 168, 0.25);
+}
+
+.field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--contact-error);
+  font-size: 0.82rem;
+  font-weight: 600;
+  animation: notice-in 0.25s var(--ease) both;
+}
+
+.field-error::before {
+  content: "!";
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.15rem;
+  border-radius: 50%;
+  background: var(--contact-error);
+  color: var(--contact-bg);
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.field-error:empty {
+  display: none;
+}
+
+.field-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.char-count {
+  margin: 0 0 0 auto;
+  color: var(--contact-muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.char-count.is-near-limit {
+  color: #ffd58a;
+  font-weight: 700;
+}
+
 .contact-form .button-primary {
   align-self: flex-start;
   background: var(--contact-accent);
@@ -1663,15 +1784,128 @@ h1 em {
   background: #c1f3d3;
 }
 
-.form-help,
-.form-status {
-  margin: 0.3rem 0 0;
+.form-help {
+  margin: -0.3rem 0 0;
   color: var(--contact-muted);
   font-size: 0.8rem;
 }
 
+.draft-notice {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem 1rem;
+  padding: 0.7rem 1rem;
+  border: 1px dashed var(--contact-accent);
+  border-radius: var(--radius-sm);
+  background: rgba(148, 221, 180, 0.08);
+  font-size: 0.85rem;
+  animation: notice-in 0.35s var(--ease) both;
+}
+
+.draft-notice p {
+  margin: 0;
+}
+
+.contact-section .text-button {
+  color: var(--contact-accent);
+}
+
 .form-status:empty {
   display: none;
+}
+
+.form-alert {
+  display: flex;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--contact-line);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  animation: alert-pop 0.4s var(--ease) both;
+}
+
+.form-alert.is-error {
+  border-color: var(--contact-error);
+  background: rgba(255, 180, 168, 0.08);
+  animation: alert-pop 0.4s var(--ease) both, shake 0.4s ease 0.1s;
+}
+
+.form-alert.is-success {
+  border-color: var(--contact-accent);
+  background: rgba(148, 221, 180, 0.1);
+}
+
+.alert-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  background: var(--contact-accent);
+  color: #12291f;
+}
+
+.form-alert.is-error .alert-icon {
+  background: var(--contact-error);
+}
+
+.alert-icon .icon {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 3;
+}
+
+.form-alert.is-success .icon path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: draw-check 0.45s ease 0.2s forwards;
+}
+
+.form-alert strong {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.form-alert p {
+  margin: 0;
+  color: var(--contact-muted);
+}
+
+.alert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-top: 0.5rem;
+}
+
+@keyframes alert-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes shake {
+  25% {
+    transform: translateX(-6px);
+  }
+
+  50% {
+    transform: translateX(5px);
+  }
+
+  75% {
+    transform: translateX(-3px);
+  }
+}
+
+@keyframes draw-check {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1685,6 +1919,68 @@ h1 em {
     grid-template-columns: 1fr;
     gap: 2.5rem;
   }
+
+  .contact-form .button-primary {
+    align-self: stretch;
+  }
+}
+
+/* ---------- Toast notifications ---------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: calc(100% - 2rem);
+  padding: 0.75rem 1.2rem;
+  border-radius: 100px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 0.88rem;
+  font-weight: 650;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 1rem);
+  transition: opacity 0.25s ease, transform 0.3s var(--ease), visibility 0s linear 0.3s;
+  pointer-events: none;
+}
+
+.toast::before {
+  content: "";
+  flex-shrink: 0;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #8ee0b1;
+}
+
+/* The toast inverts the page colors, so its dot uses the opposite theme's tones. */
+:root[data-theme="dark"] .toast::before {
+  background: #0e7659;
+}
+
+.toast[data-type="error"]::before {
+  background: #ff9b8f;
+}
+
+:root[data-theme="dark"] .toast[data-type="error"]::before {
+  background: #b42318;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition: opacity 0.25s ease, transform 0.3s var(--ease), visibility 0s;
+}
+
+.toast:empty {
+  display: none;
 }
 
 /* ---------- Footer ---------- */

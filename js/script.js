@@ -688,36 +688,271 @@ function initFooterYear() {
   $("#year").textContent = String(new Date().getFullYear());
 }
 
+/* ---------- Toast and clipboard ---------- */
+
+let toastTimer;
+
+function showToast(message, type = "success") {
+  const toast = $("#toast");
+  toast.textContent = message;
+  toast.dataset.type = type;
+  toast.classList.add("is-visible");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 3200);
+}
+
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Permission denied: fall through to the older technique below.
+  }
+
+  // Fallback for older browsers and pages that are not served securely.
+  const previousFocus = document.activeElement;
+  const helper = createElement("textarea", { attrs: { readonly: "", "aria-hidden": "true" } });
+  helper.value = text;
+  helper.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
+  document.body.append(helper);
+  helper.select();
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+  helper.remove();
+  if (previousFocus) previousFocus.focus();
+  return copied;
+}
+
+function initCopyEmail() {
+  const button = $("#copy-email");
+  const label = $("span", button);
+  let resetTimer;
+  button.hidden = false;
+
+  button.addEventListener("click", async () => {
+    const copied = await copyText(button.dataset.copy);
+    if (!copied) {
+      showToast("Couldn’t copy automatically. Please select the address and copy it.", "error");
+      return;
+    }
+    showToast("Email address copied to your clipboard.");
+    button.classList.add("is-copied");
+    label.textContent = "Copied";
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => {
+      button.classList.remove("is-copied");
+      label.textContent = "Copy";
+    }, 2000);
+  });
+}
+
 /* ---------- Contact form ---------- */
+
+const CONTACT = {
+  email: "ewidahabdullah@gmail.com",
+  draftKey: "portfolio-contact-draft",
+  minMessage: 10,
+};
+
+// A practical check: something@something.domain, with no spaces.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+// Each rule returns an error message, or an empty string when the value is fine.
+const FIELD_RULES = {
+  name: (value) => {
+    if (!value) return "Please enter your name so I know who is writing.";
+    if (value.length < 2) return "Your name should be at least 2 characters long.";
+    return "";
+  },
+  email: (value) => {
+    if (!value) return "Please enter your email address so I can reply.";
+    if (!EMAIL_PATTERN.test(value)) return "This email address looks incomplete. Use the format name@example.com.";
+    return "";
+  },
+  message: (value) => {
+    if (!value) return "Please write a message before sending.";
+    if (value.length < CONTACT.minMessage) {
+      const remaining = CONTACT.minMessage - value.length;
+      return `Please add a little more detail: ${remaining} more ${remaining === 1 ? "character" : "characters"} needed.`;
+    }
+    return "";
+  },
+};
+
+const ICONS = {
+  check: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>',
+  alert: '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v6M12 17h.01" /></svg>',
+};
 
 function initContactForm() {
   const form = $("#contact-form");
   const status = $("#form-status");
+  const topic = $("#topic");
+  const counter = $("#message-count");
+  const draftNotice = $("#draft-notice");
+  const fields = {
+    name: $("#name"),
+    email: $("#email"),
+    message: $("#message"),
+  };
+  const fieldNames = Object.keys(fields);
+  const maxMessage = Number(fields.message.getAttribute("maxlength"));
 
-  // This static site has no server: compose a draft in the visitor's email app.
+  // Errors appear only after a visitor leaves a field or tries to submit,
+  // so nobody is scolded while still typing their first word.
+  const touched = new Set();
+
+  // Our own messages are clearer than the browser's default bubbles.
+  form.noValidate = true;
+
+  function validateField(name) {
+    const field = fields[name];
+    const message = FIELD_RULES[name](field.value.trim());
+    $(`#${name}-error`).textContent = message;
+    field.setAttribute("aria-invalid", String(Boolean(message)));
+    field.closest(".field").classList.toggle("has-error", Boolean(message));
+    return message === "";
+  }
+
+  function clearErrors() {
+    fieldNames.forEach((name) => {
+      $(`#${name}-error`).textContent = "";
+      fields[name].removeAttribute("aria-invalid");
+      fields[name].closest(".field").classList.remove("has-error");
+    });
+    touched.clear();
+  }
+
+  function updateCounter() {
+    const length = fields.message.value.length;
+    counter.textContent = `${length} / ${maxMessage}`;
+    counter.classList.toggle("is-near-limit", length >= maxMessage * 0.9);
+  }
+
+  function showAlert(type, title, text, actions = []) {
+    const alert = createElement("div", { className: `form-alert is-${type}` }, [
+      createElement("span", { className: "alert-icon" }),
+      createElement("div", {}, [createElement("strong", { text: title }), createElement("p", { text }), ...(actions.length ? [createElement("div", { className: "alert-actions" }, actions)] : [])]),
+    ]);
+    alert.firstChild.innerHTML = type === "success" ? ICONS.check : ICONS.alert;
+    status.textContent = "";
+    status.append(alert);
+  }
+
+  function textButton(label, onClick) {
+    const button = createElement("button", { className: "text-button", text: label, attrs: { type: "button" } });
+    button.addEventListener("click", onClick);
+    return button;
+  }
+
+  // Draft autosave: unsent text survives a refresh or an accidental tab close.
+  const readDraft = () => {
+    try {
+      return JSON.parse(storage.get(CONTACT.draftKey)) || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const saveDraft = debounce(() => {
+    const draft = { name: fields.name.value, email: fields.email.value, topic: topic.value, message: fields.message.value };
+    if (Object.values(draft).some((value) => value.trim())) {
+      storage.set(CONTACT.draftKey, JSON.stringify(draft));
+    } else {
+      storage.remove(CONTACT.draftKey);
+    }
+  }, 400);
+
+  function resetForm() {
+    form.reset();
+    clearErrors();
+    updateCounter();
+    storage.remove(CONTACT.draftKey);
+    draftNotice.hidden = true;
+    status.textContent = "";
+  }
+
+  const draft = readDraft();
+  if (draft && typeof draft === "object") {
+    fieldNames.forEach((name) => {
+      if (typeof draft[name] === "string") fields[name].value = draft[name];
+    });
+    if (typeof draft.topic === "string") topic.value = draft.topic;
+    draftNotice.hidden = !fieldNames.some((name) => fields[name].value.trim());
+  }
+
+  $("#draft-discard").addEventListener("click", () => {
+    resetForm();
+    showToast("Draft discarded.");
+    fields.name.focus();
+  });
+
+  fieldNames.forEach((name) => {
+    const field = fields[name];
+    field.addEventListener("blur", () => {
+      if (field.value.trim()) touched.add(name);
+      if (touched.has(name)) validateField(name);
+    });
+    field.addEventListener("input", () => {
+      if (touched.has(name)) validateField(name);
+      saveDraft();
+    });
+  });
+
+  fields.message.addEventListener("input", updateCounter);
+  topic.addEventListener("change", saveDraft);
+
+  // This static site has no server, so a valid form opens a pre-filled email draft.
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    if (!form.reportValidity()) return;
+    fieldNames.forEach((name) => touched.add(name));
+    const invalid = fieldNames.filter((name) => !validateField(name));
 
-    const name = form.elements.namedItem("name").value.trim();
-    const email = form.elements.namedItem("email").value.trim();
-    const message = form.elements.namedItem("message").value.trim();
-
-    if (!name || !email || !message) {
-      status.textContent = "Please complete all fields before opening your email draft.";
+    if (invalid.length > 0) {
+      const which = invalid.length === 1 ? "the highlighted field" : `the ${invalid.length} highlighted fields`;
+      showAlert("error", "Almost there", `Please fix ${which}, then press the button again.`);
+      fields[invalid[0]].focus();
       return;
     }
 
-    const subject = encodeURIComponent(`Portfolio message from ${name}`);
-    const body = encodeURIComponent(`${message}\n\nFrom: ${name}\nEmail: ${email}`);
-    status.textContent = "Your email app should open with a draft. Please send it there to complete your message.";
-    window.location.href = `mailto:ewidahabdullah@gmail.com?subject=${subject}&body=${body}`;
+    const name = fields.name.value.trim();
+    const email = fields.email.value.trim();
+    const message = fields.message.value.trim();
+    const subject = topic.value ? `${topic.value}: message from ${name}` : `Portfolio message from ${name}`;
+    const body = `${message}\n\n${name}\n${email}`;
+
+    // The text stays in the form until the visitor clears it, in case the
+    // email app does not open on their device.
+    draftNotice.hidden = true;
+    showAlert("success", `Thanks, ${name}! Your email draft is ready.`, "Your email app should open now with everything filled in. Just press Send there. If nothing opened, copy your message and email me directly.", [
+      textButton("Copy my message", async () => {
+        const copied = await copyText(`To: ${CONTACT.email}\nSubject: ${subject}\n\n${body}`);
+        showToast(copied ? "Message copied. Paste it into any email app." : "Couldn’t copy automatically. Please select the text and copy it.", copied ? "success" : "error");
+      }),
+      textButton("Clear the form", () => {
+        resetForm();
+        showToast("Form cleared.");
+        fields.name.focus();
+      }),
+    ]);
+
+    window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   });
+
+  counter.hidden = false;
+  $("#draft-help").hidden = false;
+  updateCounter();
 }
 
 /* ---------- Start ---------- */
 
-[initTheme, initNavigation, initProjectExplorer, initGitHubRepos, initFooterYear, initContactForm].forEach((init) => {
+[initTheme, initNavigation, initProjectExplorer, initGitHubRepos, initCopyEmail, initContactForm, initFooterYear].forEach((init) => {
   try {
     init();
   } catch (error) {
