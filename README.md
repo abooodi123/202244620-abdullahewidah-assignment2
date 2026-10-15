@@ -213,15 +213,15 @@ Without JavaScript, every project, highlight, and About panel stays visible, and
 
 ## AI use (summary)
 
-I used **Claude Code**, Anthropic's AI coding assistant, running in VS Code, for this assignment. I used it to:
+I built this assignment together with **Claude Code**, Anthropic's AI coding assistant, in VS Code. We worked on every part together:
 
-- audit Assignment 1;
-- plan the features and branch structure;
-- write and refactor the HTML, CSS, and JavaScript;
-- write the automated browser tests and run Lighthouse;
-- draft this documentation.
+- auditing Assignment 1;
+- planning the features and the branch structure;
+- building and refactoring the HTML, CSS, and JavaScript;
+- writing the automated browser tests and running Lighthouse;
+- writing this documentation.
 
-Every feature was checked in a real browser, and the AI's mistakes were caught and fixed. Examples include a collapsed panel that was still 33 px tall, a search that matched button labels, and accessibility problems carried over from Assignment 1. The full report lists the mistakes, explains how the key code works, and describes my own review: [docs/ai-usage-report.md](docs/ai-usage-report.md).
+We tested every feature in a real browser and fixed the problems we found. Those included a "collapsed" panel that was still 33 px tall, a search that matched button labels, and accessibility issues carried over from Assignment 1. The full report covers our workflow, the problems we fixed, and how the key code works: [docs/ai-usage-report.md](docs/ai-usage-report.md).
 
 ---
 
