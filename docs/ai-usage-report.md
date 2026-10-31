@@ -1,6 +1,6 @@
 # AI Usage Report — Assignment 2
 
-I built this assignment together with an AI coding assistant, Claude Code. This report explains how we worked together, how we checked the work, where the first attempts were wrong and how we fixed them, and how the important parts of the code work. Every issue in section 4 really happened during the assignment, and each fix can be found in the commit history.
+I built this assignment together with an AI coding agent, Claude Code. I set the goals, the scope, and the decisions; Claude Code generated the code, tests, and documentation drafts and checked them in a real browser. This report explains how that worked, how the work was checked, where the first attempts were wrong and how they were fixed, and how the important parts of the code work. Every AI conversation and AI-generated artifact is listed in the [usage log](#10-ai-usage-log), and the full conversation is in the AI Evidence ZIP submitted on Blackboard. Every issue in section 4 really happened, and each fix can be found in the commit history.
 
 ## Contents
 
@@ -13,6 +13,9 @@ I built this assignment together with an AI coding assistant, Claude Code. This 
 7. [Creative uses of AI](#7-creative-uses-of-ai)
 8. [Review and understanding](#8-review-and-understanding)
 9. [Responsible use](#9-responsible-use)
+10. [AI usage log](#10-ai-usage-log)
+11. [AI evidence](#11-ai-evidence)
+12. [Declaration](#12-declaration)
 
 ---
 
@@ -58,7 +61,7 @@ fix/foundations → feature/project-explorer → feature/github-repos → featur
 
 ### Step 4: building, testing, and merging
 
-We worked through each branch in the same loop:
+For each branch, Claude Code worked through the same loop and reported the results to me:
 
 1. write the code;
 2. check the JavaScript syntax with `node --check`;
@@ -68,7 +71,7 @@ We worked through each branch in the same loop:
 
 ### Step 5: auditing the finished site
 
-Once all the features were in, we checked the whole site:
+Once all the features were in, Claude Code checked the whole site:
 
 - Lighthouse on mobile and desktop;
 - a contrast calculation for every text and background color pair in both themes;
@@ -79,7 +82,7 @@ Once all the features were in, we checked the whole site:
 
 ### Step 6: documentation
 
-We wrote the README, the technical documentation, and this report from the real code and test results.
+Claude Code drafted the README, the technical documentation, and this report from the real code and test results. At my request, it later rewrote this report in a collaborative voice, and then added the usage log and the declaration required by the course's AI policy.
 
 ---
 
@@ -207,3 +210,48 @@ What I learned from this assignment:
 - **Privacy.** No passwords, tokens, or private data were shared with the AI. The GitHub API is used without a login, so the code contains no secrets. The only personal details on the site (email, LinkedIn, GitHub) are ones I already publish.
 - **Control.** The AI worked only inside the assignment folder, all commits were made on local branches, and I decide when the public repository is published.
 - **Understanding over copying.** The AI made the work faster, but I am responsible for understanding every part of the project, and section 6 explains how the code works.
+
+---
+
+## 10. AI usage log
+
+One row per AI conversation or AI-generated artifact. The commit IDs refer to this repository's history, where every change can be inspected with `git show <commit>`.
+
+| # | Date | Tool | Conversation or artifact | Purpose | Files affected | What I changed or directed |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 2026-10-15 to 2026-10-31 | Claude Code (Claude Opus 5.5), VS Code extension | **Conversation:** one Claude Code session, ID `117bfa8f-8024-4be1-9f62-88cbb97576a2` (full transcript in the AI Evidence ZIP) | The whole assignment: auditing Assignment 1, planning, building, testing, documentation, and publishing | All files in the repository | Gave the brief and the goal (fix Assignment 1's weak spots and go beyond it); answered questions; chose to keep the AI's design; approved creating the public repo and GitHub Pages |
+| 2 | 2026-10-15 | Claude Code | **Artifact:** baseline copy of Assignment 1 (`935e1c1`) | Starting point, so every later change is visible | All Assignment 1 files, copied unchanged | None (an unchanged copy of my Assignment 1) |
+| 3 | 2026-10-15 | Claude Code | **Artifact:** foundations fix (`4891b97`) | Fix Assignment 1 problems: dark-mode contrast, theme flash, mobile menu, formatting | `index.html`, `css/styles.css`, `js/script.js`, `assets/images/portfolio-site.svg`, `assets/images/favicon.svg`, `.gitattributes`, `.gitignore` | No manual edits to the generated code |
+| 4 | 2026-10-15 | Claude Code | **Artifact:** project explorer (`19e1cad`) | Search, filters, sorting, expandable highlights, empty state | `index.html`, `css/styles.css`, `js/script.js` | No manual edits to the generated code |
+| 5 | 2026-10-15 | Claude Code | **Artifact:** GitHub repositories section (`3ea8612`) | Public API data, loading and error states, cache | `index.html`, `css/styles.css`, `js/script.js` | No manual edits to the generated code |
+| 6 | 2026-10-16 | Claude Code | **Artifact:** contact form rebuild (`31275c1`) | Inline validation, drafts, success message, copy-email button, toasts | `index.html`, `css/styles.css`, `js/script.js` | No manual edits to the generated code |
+| 7 | 2026-10-16 | Claude Code | **Artifact:** About tabs and greeting (`8b3ab3b`) | Accessible tabs, time-of-day greeting, Dhahran clock | `index.html`, `css/styles.css`, `js/script.js` | No manual edits to the generated code |
+| 8 | 2026-10-16 | Claude Code | **Artifact:** motion (`3fd1b80`) | Scroll reveals, hover effects, back to top, theme cross-fade | `index.html`, `css/styles.css`, `js/script.js` | No manual edits to the generated code |
+| 9 | 2026-10-16 | Claude Code | **Artifact:** audit fixes (`8a27006`) | Accessibility fixes from the Lighthouse audit and code review | `index.html`, `css/styles.css`, `js/script.js` | No manual edits to the generated code |
+| 10 | 2026-10-16 | Claude Code | **Artifact:** automated browser tests (`77c3131`, `9665948`, `5a07597`) | 63 browser checks, plus the keyboard fixes those checks found | `tests/*`, `index.html`, `css/styles.css`, `js/script.js` | No manual edits to the generated code |
+| 11 | 2026-10-16 | Claude Code | **Artifact:** documentation (`68bc95d`, `6180e41`) | README, technical documentation, first version of this report, screenshots | `README.md`, `docs/*` | No manual edits |
+| 12 | 2026-10-16 | Claude Code | **Artifact:** report rewrite (`76cb2c3`) | Rewrite this report in a collaborative voice | `docs/ai-usage-report.md`, `README.md` | Requested this rewrite and its tone |
+| 13 | 2026-10-16 | Claude Code | **Action:** publishing (no file changes) | Create the public GitHub repository, push all branches, enable GitHub Pages, check the live site | GitHub repository settings | Approved publishing |
+| 14 | 2026-10-31 | Claude Code | **Artifact:** this usage log, the declaration, and the evidence ZIP | Meet the course's AI declaration policy | `docs/ai-usage-report.md`; the evidence ZIP (not in the repository) | Provided the policy and asked for these to be added |
+
+---
+
+## 11. AI evidence
+
+The **AI Evidence ZIP**, `202244620-abdullahewidah-assignment2-ai-evidence.zip`, is submitted on Blackboard with the repository link. As the policy requires, it is not committed to this repository. It contains:
+
+- **the full conversation:** the original Claude Code session transcript (JSONL), plus a readable Markdown version;
+- **the intermediate artifacts:** every AI-generated change as a numbered patch, in the order it was made, and a full snapshot of the project after each commit.
+
+---
+
+## 12. Declaration
+
+> *[Paste the declaration statement from the assignment guidelines here, word for word.]*
+
+| | |
+| --- | --- |
+| **Name** | Abdullah Mohammed Ewidah |
+| **Student ID** | 202244620 |
+| **Date** | |
+| **Signature** | |
